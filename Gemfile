@@ -6,6 +6,7 @@ gem 'redis'
 gem 'haml'
 
 group :development do
+  gem 'guard-haml'
   gem 'guard-compass'
   gem 'guard-sass'
   gem 'therubyracer'

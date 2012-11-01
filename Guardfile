@@ -2,6 +2,10 @@
 #  watch %r{views/stylesheets/application.sass}
 #end
 
+guard :haml, input: 'views', output: 'public', haml_options: { ugly: true } do
+  watch %r{^.+(\.haml)$}
+end
+
 guard :compass do
   watch %r{^views/stylesheets/application.s[ac]ss}
 end

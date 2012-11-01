@@ -1,4 +1,5 @@
 *.swp
+*.html
 *.js
 *.css
 /tmp/
