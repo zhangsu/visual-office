@@ -2,5 +2,6 @@
 *.html
 *.js
 *.css
+.DS_Store
 /tmp/
 /.sass-cache/
