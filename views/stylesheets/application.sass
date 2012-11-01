@@ -1,2 +1,45 @@
-body
-  color: blue
+@import 'base'
+@import 'compass/css3/transform'
+@import 'compass/css3/transition'
+
+#canvas
+  background:
+    image: url('../images/carpet.png')
+    repeat: repeat
+
+.male
+  background-image: url('../images/male.png')
+
+.female
+  background-image: url('../images/femail.png')
+
+.unknown-gender
+  background-image: url('../images/unknown_gender.png')
+
+.character
+  background-repeat: no-repeat
+  position: absolute
+  border-radius: 1000px
+  @include transition-property(left, top, box-shadow, background-color)
+  @include transition-duration(0.5s)
+  @include transition-timing-function(linear)
+
+.character:hover
+  $color: #fff
+  background-color: $color
+  box-shadow: 0px 0px 10px 5px $color
+
+.name
+  position: absolute
+
+.orien0
+  background-position: 0% 0%
+
+.orien1
+  background-position: 0% 33%
+
+.orien2
+  background-position: 0% 66%
+
+.orien3
+  background-position: 0% 100%
