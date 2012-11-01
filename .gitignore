@@ -1,3 +1,5 @@
 *.swp
+*.js
+*.css
 /tmp/
 /.sass-cache/
