@@ -1,3 +1,29 @@
+addingDesk = false
+mapId = 1
+tiles = {}
+
+Node =
+  free: 0
+  desk: 1
+  char: 2
+
+freeTileNode = (x, y) ->
+  xkey = "#{x}"
+  tiles[xkey]["#{y}"] = Node.free if tiles[xkey]
+
+putTileNode = (x, y, node) ->
+  xkey = "#{x}"
+  tiles[xkey] ||= {}
+  tiles[xkey]["#{y}"] = node
+
+isTileFree = (x, y) ->
+  xkey = "#{x}"
+  ykey = "#{y}"
+  not tiles[xkey] or not tiles[xkey][ykey]
+
+tileUnderPoint = (x, y) ->
+  [Math.floor(x / 32), Math.floor(y / 32)]
+
 class Object
   constructor: (@id, @x, @y, @height) ->
 
@@ -6,6 +32,9 @@ class Object
 
   screenY: ->
     (@y + 1) * 32 - @height
+
+  freeTileNode: ->
+    freeTileNode(@x, @y)
 
 
 class Character extends Object
@@ -33,28 +62,32 @@ class Character extends Object
     jq_name.css('top', '-16px')
 
   moveLeft: ->
+    this.freeTileNode()
     @x -= 1
     @orien = 1
     this.updateScreenX()
-    this.updateOrientation()
+    this.updateMovement()
 
   moveRight: ->
+    this.freeTileNode()
     @x += 1
     @orien = 2
     this.updateScreenX()
-    this.updateOrientation()
+    this.updateMovement()
 
   moveUp: ->
+    this.freeTileNode()
     @y -= 1
     @orien = 3
     this.updateScreenY()
-    this.updateOrientation()
+    this.updateMovement()
 
   moveDown: ->
+    this.freeTileNode()
     @y += 1
     @orien = 0
     this.updateScreenY()
-    this.updateOrientation()
+    this.updateMovement()
 
   updateScreenX: ->
     @jq.css('left', "#{this.screenX()}px")
@@ -66,6 +99,9 @@ class Character extends Object
     @jq_sprite.removeClass('orien0 orien1 orien2 orien3')
     @jq_sprite.addClass("orien#{@orien}")
 
+  updateMovement: ->
+    putTileNode(@x, @y, Node.char)
+    this.updateOrientation()
 
 class Desk extends Object
   constructor: (id, x, y, height = 48) ->
@@ -76,20 +112,33 @@ class Desk extends Object
     @jq.height(height)
     @jq.css('z-index', y)
 
-    this.updatePos()
+    this.updateScreenPos()
+    this.updateNode()
 
     $('#canvas').append(@jq)
 
-  updatePos: ->
+  updateScreenPos: ->
     @jq.css('left', "#{this.screenX()}px")
     @jq.css('top', "#{this.screenY()}px")
 
-addingDesk = false
+  updateNode: ->
+    putTileNode(@x, @y, Node.desk)
 
 $ ->
   canvas = $('#canvas')
   canvas.width(3200)
   canvas.height(1600)
+
+  canvas.mousedown (e) ->
+    if addingDesk
+      indice = tileUnderPoint(e.pageX, e.pageY)
+      x = indice[0]
+      y = indice[1]
+      if isTileFree(x, y)
+        putTileNode(new Desk(1, x, y))
+    else
+      console.log 'should be moving'
+
 
   toolbar = $('#toolbar')
   $('#toolbar-toggle').click ->
@@ -98,7 +147,7 @@ $ ->
   addDeskButton = $('#add-desk')
   addDeskButton.click ->
     addDeskButton.toggleClass('pressed')
-    addingDesk ^= false
+    addingDesk = if addingDesk then false else true
 
   self = new Character(1, 'szhang', -1, 1)
   self.moveRight()
