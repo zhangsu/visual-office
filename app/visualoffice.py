@@ -36,7 +36,7 @@ xmlhttp.onreadystatechange=function()
   }
 xmlhttp.open("POST","user",true);
 xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-xmlhttp.send("x=5&y=4");
+xmlhttp.send("x=5&y=6&map_id=8thfloor");
 }
 </script>
 </head>
@@ -51,5 +51,6 @@ app = webapp2.WSGIApplication([('/desks', desk.ListDesksPage),
                                ('/desk', desk.DeskPage),
                                ('/users', user.ListUsersPage),
                                ('/user', user.UserPage),
+                               ('/me', user.MePage),
                                ('/', MainPage)],
                               debug=True)
