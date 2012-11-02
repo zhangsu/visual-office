@@ -90,7 +90,7 @@ populateObjects = ->
     imperativeRequestResponseHandler(response)
 
     for user in response.content
-      new Character(user.name, user.x, user.y)
+      new Character(user.id, user.x, user.y) unless getTileNode(user.x, user.y)
 
 
 class Object
@@ -217,7 +217,7 @@ $ ->
       when ToolbarState.addingSelf
         unless node
           myself.remove() if myself
-          myself = new Character('szhang', x, y, true)
+          myself = new Character(myself.name, x, y, true)
           myself.enableTurning()
       when ToolbarState.removingSelf
         if node and node is myself
@@ -237,6 +237,11 @@ $ ->
   .mousemove (e) ->
     return unless mousedownOnCanvas
     mouseClickHandler(e)
+
+  $.get '/me', (response) ->
+    imperativeRequestResponseHandler(response)
+    character = response.content
+    myself = new Character(character.id, character.x, character.y)
 
   populateObjects()
 
