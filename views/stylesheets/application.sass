@@ -1,2 +1,152 @@
-body
-  color: blue
+@import 'base'
+@import 'compass'
+@import 'compass/css3/user-interface'
+
+@include keyframes(fade-in)
+  from
+    opacity: 0
+  to
+    opacity: 1
+
+@include keyframes(fade-out)
+  from
+    opacity: 1
+  to
+    opacity: 0
+
+.name
+  @include user-select(none)
+
+.fade-in
+  @include animation(fade-in 0.5s)
+
+.fade-out
+  opacity: 0
+  @include animation(fade-out 0.5s)
+
+#toolbar
+  width: $toolbar-width
+  height: 100%
+  min-height: 100px
+  z-index: 10000000
+  position: fixed
+  text-align: center
+  opacity: 0.8
+  @include background-image(linear-gradient(left, #aaa, #fff))
+  @include transition(left 0.5s ease)
+
+  &.collapsed
+    left: -$toolbar-width
+
+    #toolbar-toggle-arrow
+      border-left: 7px solid #333
+      border-right: 0
+
+#add-self, #remove-self, #add-desk, #remove-desk
+  $width: 32px
+  position: absolute
+  width: $width
+  height: 48px
+  left: ($toolbar-width - $width) / 2
+  background-image: url('../images/desk.png')
+  border-radius: 6px
+
+  &:hover
+    @include scale(1.1, 1.1)
+
+  &.pressed
+    background-color: #333
+    box-shadow: 0 0 5px 5px #333
+
+#add-self
+  top: 35%
+  background-image: url('../images/male.png')
+
+#remove-self
+  top: 45%
+  background-image: url('../images/unknown_gender.png')
+
+#add-desk
+  top: 55%
+
+#remove-desk
+  top: 65%
+
+#remove-self, #remove-desk
+  font-size: 60px
+  line-height: 40px
+  @include user-select(none)
+
+#toolbar-toggle
+  width: 10px
+  height: 100%
+  position: absolute
+  top: 0
+  right: -10px
+  @include background-image(linear-gradient(left, #fff, #44d))
+
+#toolbar-toggle-arrow
+  width: 0
+  height: 0
+  position: absolute
+  top: 50%
+  border:
+    top: 7px solid transparent
+    bottom: 7px solid transparent
+    right: 7px solid #333
+
+#toolbar-toggle:hover
+  @include background-image(linear-gradient(left, #fff, #77b))
+
+#canvas
+  position: absolute
+  background:
+    image: url('../images/carpet.png')
+    repeat: repeat
+
+.desk
+  position: absolute
+  background-image: url('../images/desk.png')
+
+.male
+  background-image: url('../images/male.png')
+
+.female
+  background-image: url('../images/femail.png')
+
+.unknown-gender
+  background-image: url('../images/unknown_gender.png')
+
+.character
+  position: absolute
+  //@include transition-property(left top)
+  //@include transition-duration(0.5s)
+  //@include transition-timing-function(linear)
+
+.sprite
+  position: absolute
+  background-repeat: no-repeat
+  border-radius: 1000px
+  @include transition-property(box-shadow background-color)
+  @include transition-duration(0.5s)
+  @include transition-timing-function(linear)
+
+  &:hover
+    $color: #fff
+    background-color: $color
+    box-shadow: 0px 0px 10px 5px $color
+
+.name
+  position: absolute
+
+.orien0
+  background-position: 0% 0%
+
+.orien1
+  background-position: 0% 33%
+
+.orien2
+  background-position: 0% 67%
+
+.orien3
+  background-position: 0% 100%
