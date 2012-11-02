@@ -2,27 +2,45 @@
 @import 'compass'
 
 #toolbar
-  width: 100px
+  width: $toolbar-width
   height: 100%
+  z-index: 10000000
   position: fixed
+  text-align: center
+  opacity: 0.8
   @include background-image(linear-gradient(left, #aaa, #fff))
   @include transition(left 0.5s ease)
-  opacity: 0.6
 
   &.collapsed
-    left: -90px
+    left: -$toolbar-width
 
     #toolbar-toggle-arrow
       border-left: 7px solid #333
       border-right: 0
 
+#add-desk
+  width: 32px
+  height: 48px
+  display: inline-block
+  position: relative
+  top: 50%
+  background-image: url('../images/desk.png')
+  border-radius: 6px
+
+  &:hover
+    @include scale(1.1, 1.1)
+
+  &.pressed
+    background-color: #333
+    box-shadow: 0 0 5px 5px #333
+
 #toolbar-toggle
   width: 10px
   height: 100%
   position: absolute
-  right: 0
+  top: 0
+  right: -10px
   @include background-image(linear-gradient(left, #fff, #44d))
-  opacity: 0.7
 
 #toolbar-toggle-arrow
   width: 0
@@ -42,6 +60,10 @@
   background:
     image: url('../images/carpet.png')
     repeat: repeat
+
+.desk
+  position: absolute
+  background-image: url('../images/desk.png')
 
 .male
   background-image: url('../images/male.png')
