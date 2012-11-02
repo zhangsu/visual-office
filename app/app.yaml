@@ -5,5 +5,13 @@ api_version: 1
 threadsafe: true
 
 handlers:
+- url: /
+  static_files: ../public/index.html
+  upload: ../public/index.html
+
+- url: /(.*\.(css|js|png))
+  static_files: ../public/\1
+  upload: ../public/(.*\.(css|js|png))
+
 - url: /.*
   script: visualoffice.app
