@@ -1,8 +1,7 @@
 import webapp2
 import json
-from util import Message
+from util import *
 
-#fjkdsl
 from google.appengine.ext import db
 from google.appengine.api import users
 
@@ -10,12 +9,12 @@ from google.appengine.api import users
 class User(db.Model):
     x = db.IntegerProperty()
     y = db.IntegerProperty()
-    name = db.StringProperty()
+    id = db.UserProperty(auto_current_user_add = True)
 
     def to_dic(self):
-        return {'id': self.key().id(),
-                'position': (self.x, self.y),
-                'name': self.name}
+        return {'x': self.x,
+                'y': self.y,
+                'id': self.id}
 
     def to_json(self):
         return json.dumps(self.to_dic())
@@ -28,82 +27,52 @@ def user_key(map_id="default"):
 
 class ListUsersPage(webapp2.RequestHandler):
 
+    @authenticate
     def get(self):
         map_id = self.request.get('map_id') or "default"
         self.msg = Message()
 
         try:        
             users = db.GqlQuery("SELECT * FROM User WHERE ANCESTOR IS :1", user_key(map_id))
-        
             users_l = [user.to_dic() for user in users]
-            self.msg.status = "OK"
-            self.msg.content = users_l
+            self.msg.ok(users_l)
         except Exception as e:
-            self.msg.status = "ERROR"
-            self.msg.content = e        
+            self.msg.error(e)        
         self.response.out.write(self.msg.format())
 
 
 class UserPage(webapp2.RequestHandler):
 
+    @authenticate
     def post(self):
         map_id = self.request.get('map_id') or "default"
-        user_id = self.request.get('user_id')
-        method = self.request.get('method')
-
         self.msg = Message()
         try:
-            if method and method == "delete":
-                self.do_delete(map_id, user_id)
-            else:
-                self.do_post(map_id, user_id)
+            self.do_post(map_id)
         except Exception as e:
-            self.msg.status = "ERROR"
-            self.msg.content = e
+            self.msg.error(e)
         self.response.out.write(self.msg.format())
 
 
-    def do_post(self, map_id, user_id):
-        if user_id:
-            user = self.lookup_user(map_id, user_id)
-            if not user:
-                self.msg.status = "ERROR"
-                self.msg.content = "No user found for id %s in map %s" % (user_id, map_id)
-                return
-        else:
-            user = Desk(parent=user_key(map_id))
+    def do_post(self, map_id):
+        id = users.get_current_user() 
+        user = lookup_user(map_id, id) 
+
+        if not user:
+            user = User(parent=user_key(map_id), key_name=id)
 
         try:
             user.x = int(self.request.get('x'))
             user.y = int(self.request.get('y'))
-            user.name = int(self.request.get('name'))
             user.put()
 
-            self.msg.status = "OK"
-            self.msg.content = user.to_dic() 
+            self.msg.ok(user.to_dic()) 
         except ValueError:
-            self.msg.status = "ERROR"
-            self.msg.content = "Invalid coordinates"
+            self.msg.error("Invalid coordinates")
 
             
-    def do_delete(self, map_id, user_id):
-        if not user_id:
-            self.msg.status = "ERROR"
-            self.msg.content = "Please specify user_id"  
-            return
-        
-        user = self.lookup_user(map_id, user_id)
-        if not user:
-            self.msg.status = "ERROR"
-            self.msg.content = "No user found for id %s in map %s" % (user_id, map_id)
-            return
-         
-        user.delete()
-        self.msg.status = "OK"
-        self.msg.content = user.to_dic() 
-
     def lookup_user(self, map_id, user_id): 
-        key = db.Key.from_path('User', map_id, 'User', int(user_id))
+        key = db.Key.from_path('User', map_id, 'User', user_id)
         user = db.get(key)
         return user
 
