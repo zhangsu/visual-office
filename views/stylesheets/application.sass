@@ -8,7 +8,13 @@
   to
     opacity: 1
 
-body
+@include keyframes(fade-out)
+  from
+    opacity: 1
+  to
+    opacity: 0
+
+.name
   @include user-select(none)
 
 .fade-in
@@ -16,7 +22,7 @@ body
 
 .fade-out
   opacity: 0
-  @include transition(opacity 0.5s linear)
+  @include animation(fade-out 0.5s)
 
 #toolbar
   width: $toolbar-width
@@ -36,7 +42,7 @@ body
       border-left: 7px solid #333
       border-right: 0
 
-#add-desk, #remove-desk
+#add-self, #add-desk, #remove-desk
   $width: 32px
   position: absolute
   width: $width
@@ -52,6 +58,10 @@ body
     background-color: #333
     box-shadow: 0 0 5px 5px #333
 
+#add-self
+  top: 35%
+  background-image: url('../images/male.png')
+
 #add-desk
   top: 45%
 
@@ -60,6 +70,7 @@ body
   font-size: 60px
   line-height: 40px
   top: 55%
+  @include user-select(none)
 
 #toolbar-toggle
   width: 10px
@@ -103,9 +114,9 @@ body
 
 .character
   position: absolute
-  @include transition-property(left top)
-  @include transition-duration(0.5s)
-  @include transition-timing-function(linear)
+  //@include transition-property(left top)
+  //@include transition-duration(0.5s)
+  //@include transition-timing-function(linear)
 
 .sprite
   position: absolute
