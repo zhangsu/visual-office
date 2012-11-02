@@ -10,6 +10,13 @@ ToolbarState =
 toolbarState = ToolbarState.nothing
 
 mapId = 1
+mapDimension =
+  topLeft:
+    x: -10
+    y: -10
+  bottomRight:
+    x: 20
+    y: 10
 
 myself = null
 
@@ -21,6 +28,7 @@ freeTileNode = (x, y) ->
   tiles[xkey]["#{y}"] = null if tiles[xkey]
 
 putTileNode = (x, y, node) ->
+  console.log 'new node', x, y
   xkey = "#{x}"
   tiles[xkey] ||= {}
   tiles[xkey]["#{y}"] = node
@@ -32,17 +40,19 @@ getTileNode = (x, y) ->
   return tiles[xkey][ykey]
 
 tileUnderPoint = (x, y) ->
-  [Math.floor(x / 32), Math.floor(y / 32)]
+  origin = mapDimension.topLeft
+  console.log 'tile under', [Math.floor(x / 32) + origin.x, Math.floor(y / 32) + origin.y]
+  [Math.floor(x / 32) + origin.x, Math.floor(y / 32) + origin.y]
 
 
 class Object
   constructor: (@id, @x, @y, @height) ->
 
   screenX: ->
-    @x * 32
+    (@x - mapDimension.topLeft.x) * 32
 
   screenY: ->
-    (@y + 1) * 32 - @height
+    (@y - mapDimension.topLeft.y + 1) * 32 - @height
 
   freeTileNode: ->
     freeTileNode(@x, @y)
@@ -61,7 +71,7 @@ class Character extends Object
     @orien = 0
 
     @jq = $("<div id='char#{@id}' class='character fade-in'>")
-    @jq.css('z-index', y)
+    @jq.css('z-index', y + 1000000)
     @jq_sprite = $("<div class='sprite'>")
     @jq_sprite.width(@width)
     @jq_sprite.height(height)
@@ -140,7 +150,7 @@ class Desk extends Object
     @jq = $("<div id='desk#{@id}' class='desk fade-in'>")
     @jq.width(32)
     @jq.height(height)
-    @jq.css('z-index', y)
+    @jq.css('z-index', y + 1000000)
 
     this.updateScreenPos()
     this.updateNode()
@@ -148,6 +158,7 @@ class Desk extends Object
     $('#canvas').append(@jq)
 
   updateScreenPos: ->
+    console.log 'screen x,y', this.screenX(), this.screenY()
     @jq.css('left', "#{this.screenX()}px")
     @jq.css('top', "#{this.screenY()}px")
 
@@ -155,10 +166,13 @@ class Desk extends Object
     putTileNode(@x, @y, this)
 
 
+expandMap = ->
+
+
 $ ->
   canvas = $('#canvas')
-  canvas.width(3200)
-  canvas.height(1600)
+  canvas.width((mapDimension.bottomRight.x - mapDimension.topLeft.x) * 32)
+  canvas.height((mapDimension.bottomRight.y - mapDimension.topLeft.y) * 32)
 
   resetMousedownState = ->
     mousedownOnCanvas = false
