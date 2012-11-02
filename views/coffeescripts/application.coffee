@@ -1,8 +1,13 @@
 mousedownOnCanvas = false
 
-addingSelf = false
-addingDesk = false
-removingDesk = false
+ToolbarState =
+  nothing: 0
+  addingSelf: 1
+  removingSelf: 2
+  addingDesk: 3
+  removingDesk: 4
+
+toolbarState = ToolbarState.nothing
 
 mapId = 1
 
@@ -166,54 +171,42 @@ $ ->
   $('#toolbar-toggle').click ->
     toolbar.toggleClass('collapsed')
 
-  addSelfButton = $('#add-self')
-  addSelfButton.click ->
-    addSelfButton.toggleClass('pressed')
-    if addingSelf
-      addingSelf = false
-    else
-      $('#toolbar>:not(#add-self)').removeClass('pressed')
-      addingSelf = true
-      addingDesk = false
-      removingDesk = false
+  addToolbarEventHandler = (selector, stateKey) ->
+    $(selector).click ->
+      $(this).toggleClass('pressed')
+      state = ToolbarState[stateKey]
+      if toolbarState == state
+        toolbarState = ToolbarState.nothing
+      else
+        $("#toolbar>:not(#{selector})").removeClass('pressed')
+        toolbarState = state
 
-  addDeskButton = $('#add-desk')
-  addDeskButton.click ->
-    addDeskButton.toggleClass('pressed')
-    if addingDesk
-      addingDesk = false
-    else
-      $('#toolbar>:not(#add-desk)').removeClass('pressed')
-      addingDesk = true
-      removingDesk = false
-      addingSelf = false
-
-  removeDeskButton = $('#remove-desk')
-  removeDeskButton.click ->
-    removeDeskButton.toggleClass('pressed')
-    if removingDesk
-      removingDesk = false
-    else
-      $('#toolbar>:not(#remove-desk)').removeClass('pressed')
-      removingDesk = true
-      addingDesk = false
-      addingSelf = false
+  addToolbarEventHandler('#add-self', 'addingSelf')
+  addToolbarEventHandler('#remove-self', 'removingSelf')
+  addToolbarEventHandler('#add-desk', 'addingDesk')
+  addToolbarEventHandler('#remove-desk', 'removingDesk')
 
   mouseClickHandler = (e) ->
     indice = tileUnderPoint(e.pageX, e.pageY)
     x = indice[0]
     y = indice[1]
     node = getTileNode(x, y)
-    if addingSelf
-      unless node
-        myself.remove() if myself
-        myself = new Character(1, 'szhang', x, y)
-        myself.enableTurning()
-    else if addingDesk
-      putTileNode(x, y, new Desk(1, x, y)) unless node
-    else if removingDesk
-      node.remove() if node instanceof Desk
-    else
+    switch toolbarState
+      when ToolbarState.addingSelf
+        unless node
+          myself.remove() if myself
+          myself = new Character(1, 'szhang', x, y)
+          myself.enableTurning()
+      when ToolbarState.removingSelf
+        if node and node is myself
+          node.remove()
+          toolbarState = ToolbarState.nothing
+          $('#remove-self').removeClass('pressed')
+      when ToolbarState.addingDesk
+        new Desk(1, x, y) unless node
+      when ToolbarState.removingDesk
+        node.remove() if node instanceof Desk
+      else
 
   canvas.mousedown (e) ->
     if e.which == 1

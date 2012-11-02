@@ -42,7 +42,7 @@
       border-left: 7px solid #333
       border-right: 0
 
-#add-self, #add-desk, #remove-desk
+#add-self, #remove-self, #add-desk, #remove-desk
   $width: 32px
   position: absolute
   width: $width
@@ -62,14 +62,19 @@
   top: 35%
   background-image: url('../images/male.png')
 
-#add-desk
+#remove-self
   top: 45%
+  background-image: url('../images/unknown_gender.png')
+
+#add-desk
+  top: 55%
 
 #remove-desk
-  display: inline-block
+  top: 65%
+
+#remove-self, #remove-desk
   font-size: 60px
   line-height: 40px
-  top: 55%
   @include user-select(none)
 
 #toolbar-toggle
