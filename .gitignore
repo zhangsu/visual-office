@@ -1,7 +1,4 @@
 *.swp
-*.html
-*.js
-*.css
 *.pyc
 .DS_Store
 /tmp/
