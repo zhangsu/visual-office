@@ -17,6 +17,7 @@ class Message:
     def format(self):
         return json.dumps({'status': self.status, 'content': self.content})
 
+
 def authenticate(f):
     def wrapper(*args, **kwargs):
         user = users.get_current_user()

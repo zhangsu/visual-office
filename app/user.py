@@ -6,23 +6,23 @@ from google.appengine.ext import db
 from google.appengine.api import users
 
 
-class User(db.Model):
+class Yelper(db.Model):
     x = db.IntegerProperty()
     y = db.IntegerProperty()
-    id = db.UserProperty(auto_current_user_add = True)
+    guser = db.UserProperty(auto_current_user_add = True)
 
     def to_dic(self):
         return {'x': self.x,
                 'y': self.y,
-                'id': self.id}
+                'id': self.guser.nickname()}
 
     def to_json(self):
         return json.dumps(self.to_dic())
 
 
 
-def user_key(map_id="default"):
-    return db.Key.from_path('User', map_id)
+def yelper_key(map_id="default"):
+    return db.Key.from_path('Yelper', map_id)
 
 
 class ListUsersPage(webapp2.RequestHandler):
@@ -33,9 +33,9 @@ class ListUsersPage(webapp2.RequestHandler):
         self.msg = Message()
 
         try:        
-            users = db.GqlQuery("SELECT * FROM User WHERE ANCESTOR IS :1", user_key(map_id))
-            users_l = [user.to_dic() for user in users]
-            self.msg.ok(users_l)
+            yelpers = db.GqlQuery("SELECT * FROM Yelper WHERE ANCESTOR IS :1", yelper_key(map_id))
+            yelpers_l = [yelper.to_dic() for yelper in yelpers]
+            self.msg.ok(yelpers_l)
         except Exception as e:
             self.msg.error(e)        
         self.response.out.write(self.msg.format())
@@ -55,25 +55,26 @@ class UserPage(webapp2.RequestHandler):
 
 
     def do_post(self, map_id):
-        id = users.get_current_user() 
-        user = lookup_user(map_id, id) 
+        guser = users.get_current_user() 
+        id = guser.nickname()
+        yelper = self.lookup_yelper(map_id, id) 
 
-        if not user:
-            user = User(parent=user_key(map_id), key_name=id)
+        if not yelper:
+            yelper = Yelper(parent=yelper_key(map_id), key_name=id)
 
         try:
-            user.x = int(self.request.get('x'))
-            user.y = int(self.request.get('y'))
-            user.put()
+            yelper.x = int(self.request.get('x'))
+            yelper.y = int(self.request.get('y'))
+            yelper.put()
 
-            self.msg.ok(user.to_dic()) 
+            self.msg.ok(yelper.to_dic()) 
         except ValueError:
             self.msg.error("Invalid coordinates")
 
             
-    def lookup_user(self, map_id, user_id): 
-        key = db.Key.from_path('User', map_id, 'User', user_id)
-        user = db.get(key)
-        return user
+    def lookup_yelper(self, map_id, id): 
+        key = db.Key.from_path('Yelper', map_id, 'Yelper', id)
+        yelper = db.get(key)
+        return yelper
 
 
