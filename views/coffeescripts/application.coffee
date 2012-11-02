@@ -8,7 +8,6 @@ tiles = {}
 freeTileNode = (x, y) ->
   xkey = "#{x}"
   tiles[xkey]["#{y}"] = null if tiles[xkey]
-  console.log 'freed', x, y
 
 putTileNode = (x, y, node) ->
   xkey = "#{x}"
@@ -52,6 +51,9 @@ class Character extends Object
 
     @jq_sprite.addClass('male')
 
+    @jq_sprite.click =>
+      this.turn()
+
     this.updateScreenX()
     this.updateScreenY()
 
@@ -89,6 +91,11 @@ class Character extends Object
     @orien = 0
     this.updateScreenY()
     this.updateMovement()
+
+  turn: ->
+    @orien += 1
+    @orien %= 4
+    this.updateOrientation()
 
   updateScreenX: ->
     @jq.css('left', "#{this.screenX()}px")
@@ -129,7 +136,6 @@ class Desk extends Object
     freeTileNode(@x, @y)
     @jq.addClass('fade-out')
     @jq.bind 'transitionend oTransitionEnd webkitTransitionEnd', ->
-      console.log 1
       $(this).remove()
 
 $ ->

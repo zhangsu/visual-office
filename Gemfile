@@ -9,7 +9,6 @@ group :development do
   gem 'guard-haml'
   gem 'guard-compass'
   gem 'guard-sass'
-  gem 'animate'
   gem 'therubyracer'
   gem 'guard-coffeescript'
   gem 'guard-uglify'

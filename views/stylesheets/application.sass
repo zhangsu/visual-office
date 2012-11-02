@@ -1,14 +1,18 @@
 @import 'base'
 @import 'compass'
 @import 'compass/css3/user-interface'
-@import 'animate'
+
+@include keyframes(fade-in)
+  from
+    opacity: 0
+  to
+    opacity: 1
 
 body
   @include user-select(none)
 
 .fade-in
-  opacity: 1 !important
-  @include transition(opacity 0.5s linear)
+  @include animation(fade-in 0.5s)
 
 .fade-out
   opacity: 0
@@ -85,7 +89,6 @@ body
     repeat: repeat
 
 .desk
-  opacity: 0
   position: absolute
   background-image: url('../images/desk.png')
 
