@@ -1,15 +1,7 @@
 class Character
-  constructor: (id, name, x, y, width, height) ->
-    @id = id
-    @name = name
-    @x = x
-    @y = y
-    @orientation = 0
-    @frame = 0
-    @width = width
-    @height = height
+  constructor: (@id, @name, @x, @y, @width, @height) ->
     @jq = $("<div id='#{@id}' class='character'>")
-    @jq_sprite = $("<div class='character orientation0'>")
+    @jq_sprite = $("<div class='sprite'>")
     @jq_sprite.width(width)
     @jq_sprite.height(height)
     @jq_sprite.addClass('male')
@@ -19,8 +11,6 @@ class Character
     this.updateScreenY()
     $('#canvas').append(@jq)
     jq_name = $("\##{id} .name")
-    console.log jq_name
-    console.log jq_name.width()
     jq_name.css('left', "#{(width - jq_name.width()) / 2}px")
     jq_name.css('top', '-16px')
 
@@ -69,9 +59,12 @@ $ ->
   canvas.width(3200)
   canvas.height(1600)
 
-  self = new Character(1, 'szhang', 0, 0, 32, 48)
-  self.moveRight()
-  self.moveDown()
+  toolbar = $('#toolbar')
+  $('#toolbar-toggle').click ->
+    toolbar.toggleClass('collapsed')
 
-  self2 = new Character(2, 'jolleon', 3, 4, 32, 48)
-  self2.moveLeft()
+  self = new Character(1, 'szhang', -1, 1, 32, 48)
+  self.moveRight()
+
+  another = new Character(2, 'jolleon', 3, 4, 32, 48)
+  another.moveLeft()
