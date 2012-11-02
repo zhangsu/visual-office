@@ -1,28 +1,29 @@
+mousedownOnCanvas = false
 addingDesk = false
+removingDesk = false
 mapId = 1
 tiles = {}
 
-Node =
-  free: 0
-  desk: 1
-  char: 2
 
 freeTileNode = (x, y) ->
   xkey = "#{x}"
-  tiles[xkey]["#{y}"] = Node.free if tiles[xkey]
+  tiles[xkey]["#{y}"] = null if tiles[xkey]
+  console.log 'freed', x, y
 
 putTileNode = (x, y, node) ->
   xkey = "#{x}"
   tiles[xkey] ||= {}
   tiles[xkey]["#{y}"] = node
 
-isTileFree = (x, y) ->
+getTileNode = (x, y) ->
   xkey = "#{x}"
   ykey = "#{y}"
-  not tiles[xkey] or not tiles[xkey][ykey]
+  return null unless tiles[xkey]
+  return tiles[xkey][ykey]
 
 tileUnderPoint = (x, y) ->
   [Math.floor(x / 32), Math.floor(y / 32)]
+
 
 class Object
   constructor: (@id, @x, @y, @height) ->
@@ -100,14 +101,14 @@ class Character extends Object
     @jq_sprite.addClass("orien#{@orien}")
 
   updateMovement: ->
-    putTileNode(@x, @y, Node.char)
+    putTileNode(@x, @y, this)
     this.updateOrientation()
 
 class Desk extends Object
   constructor: (id, x, y, height = 48) ->
     super(id, x, y, height)
 
-    @jq = $("<div id='desk#{@id}' class='desk'>")
+    @jq = $("<div id='desk#{@id}' class='desk fade-in'>")
     @jq.width(32)
     @jq.height(height)
     @jq.css('z-index', y)
@@ -122,23 +123,44 @@ class Desk extends Object
     @jq.css('top', "#{this.screenY()}px")
 
   updateNode: ->
-    putTileNode(@x, @y, Node.desk)
+    putTileNode(@x, @y, this)
+
+  remove: ->
+    freeTileNode(@x, @y)
+    @jq.addClass('fade-out')
+    @jq.bind 'transitionend oTransitionEnd webkitTransitionEnd', ->
+      console.log 1
+      $(this).remove()
 
 $ ->
   canvas = $('#canvas')
   canvas.width(3200)
   canvas.height(1600)
 
-  canvas.mousedown (e) ->
+  mouseClickHandler = (e) ->
+    indice = tileUnderPoint(e.pageX, e.pageY)
+    x = indice[0]
+    y = indice[1]
+    node = getTileNode(x, y)
     if addingDesk
-      indice = tileUnderPoint(e.pageX, e.pageY)
-      x = indice[0]
-      y = indice[1]
-      if isTileFree(x, y)
-        putTileNode(new Desk(1, x, y))
+      putTileNode(x, y, new Desk(1, x, y)) unless node
+    else if removingDesk
+      node.remove() if node
     else
-      console.log 'should be moving'
 
+  resetMousedownState = ->
+    mousedownOnCanvas = false
+
+  $(window).focus(resetMousedownState)
+    .blur(resetMousedownState)
+    .mouseup(resetMousedownState)
+
+  canvas.mousedown (e) ->
+    mousedownOnCanvas = true
+    mouseClickHandler(e)
+  .mousemove (e) ->
+    return unless mousedownOnCanvas
+    mouseClickHandler(e)
 
   toolbar = $('#toolbar')
   $('#toolbar-toggle').click ->
@@ -147,7 +169,22 @@ $ ->
   addDeskButton = $('#add-desk')
   addDeskButton.click ->
     addDeskButton.toggleClass('pressed')
-    addingDesk = if addingDesk then false else true
+    if addingDesk
+      addingDesk = false
+    else
+      removeDeskButton.removeClass('pressed')
+      addingDesk = true
+      removingDesk = false
+
+  removeDeskButton = $('#remove-desk')
+  removeDeskButton.click ->
+    removeDeskButton.toggleClass('pressed')
+    if removingDesk
+      removingDesk = false
+    else
+      addDeskButton.removeClass('pressed')
+      removingDesk = true
+      addingDesk = false
 
   self = new Character(1, 'szhang', -1, 1)
   self.moveRight()

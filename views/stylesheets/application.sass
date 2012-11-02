@@ -1,9 +1,23 @@
 @import 'base'
 @import 'compass'
+@import 'compass/css3/user-interface'
+@import 'animate'
+
+body
+  @include user-select(none)
+
+.fade-in
+  opacity: 1 !important
+  @include transition(opacity 0.5s linear)
+
+.fade-out
+  opacity: 0
+  @include transition(opacity 0.5s linear)
 
 #toolbar
   width: $toolbar-width
   height: 100%
+  min-height: 100px
   z-index: 10000000
   position: fixed
   text-align: center
@@ -18,12 +32,12 @@
       border-left: 7px solid #333
       border-right: 0
 
-#add-desk
-  width: 32px
+#add-desk, #remove-desk
+  $width: 32px
+  position: absolute
+  width: $width
   height: 48px
-  display: inline-block
-  position: relative
-  top: 50%
+  left: ($toolbar-width - $width) / 2
   background-image: url('../images/desk.png')
   border-radius: 6px
 
@@ -33,6 +47,15 @@
   &.pressed
     background-color: #333
     box-shadow: 0 0 5px 5px #333
+
+#add-desk
+  top: 45%
+
+#remove-desk
+  display: inline-block
+  font-size: 60px
+  line-height: 40px
+  top: 55%
 
 #toolbar-toggle
   width: 10px
@@ -62,6 +85,7 @@
     repeat: repeat
 
 .desk
+  opacity: 0
   position: absolute
   background-image: url('../images/desk.png')
 
@@ -76,7 +100,7 @@
 
 .character
   position: absolute
-  @include transition-property(left, top)
+  @include transition-property(left top)
   @include transition-duration(0.5s)
   @include transition-timing-function(linear)
 
@@ -84,7 +108,7 @@
   position: absolute
   background-repeat: no-repeat
   border-radius: 1000px
-  @include transition-property(box-shadow, background-color)
+  @include transition-property(box-shadow background-color)
   @include transition-duration(0.5s)
   @include transition-timing-function(linear)
 
