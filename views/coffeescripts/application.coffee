@@ -12,13 +12,14 @@ toolbarState = ToolbarState.nothing
 mapId = 'Playground'
 mapDimension =
   topLeft:
-    x: -10
-    y: -10
+    x: 0
+    y: 0
   bottomRight:
-    x: 20
-    y: 10
+    x: 200
+    y: 100
 
 myself = null
+myName = ''
 
 tiles = {}
 
@@ -217,7 +218,7 @@ $ ->
       when ToolbarState.addingSelf
         unless node
           myself.remove() if myself
-          myself = new Character(myself.name, x, y, true)
+          myself = new Character(myName, x, y, true)
           myself.enableTurning()
       when ToolbarState.removingSelf
         if node and node is myself
@@ -241,7 +242,11 @@ $ ->
   $.get '/me', (response) ->
     imperativeRequestResponseHandler(response)
     character = response.content
-    myself = new Character(character.id, character.x, character.y)
+    if character.x
+      myself = new Character(character.id, character.x, character.y)
+    else
+      myself = null
+    myName = character.id
 
   populateObjects()
 
