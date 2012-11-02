@@ -16,8 +16,8 @@ class Map(db.Model):
     def to_dic(self):
         return {'tl_x': self.tl_x,
                 'tl_y': self.tl_y,
-                'tl_x': self.tl_x,
-                'tl_y': self.tl_y,
+                'br_x': self.br_x,
+                'br_y': self.br_y,
                 'map_id': self.map_id}
 
     def to_json(self):
