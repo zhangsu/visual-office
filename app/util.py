@@ -19,10 +19,10 @@ class Message:
 
 
 def authenticate(f):
-    def wrapper(*args, **kwargs):
+    def wrapper(self, *args, **kwargs):
         user = users.get_current_user()
         if user:
-            f(*args,**kwargs)
+            f(self, *args,**kwargs)
         else:
             self.redirect(users.create_login_url(self.request.uri))
     return wrapper
