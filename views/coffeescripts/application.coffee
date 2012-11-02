@@ -28,7 +28,6 @@ freeTileNode = (x, y) ->
   tiles[xkey]["#{y}"] = null if tiles[xkey]
 
 putTileNode = (x, y, node) ->
-  console.log 'new node', x, y
   xkey = "#{x}"
   tiles[xkey] ||= {}
   tiles[xkey]["#{y}"] = node
@@ -41,7 +40,6 @@ getTileNode = (x, y) ->
 
 tileUnderPoint = (x, y) ->
   origin = mapDimension.topLeft
-  console.log 'tile under', [Math.floor(x / 32) + origin.x, Math.floor(y / 32) + origin.y]
   [Math.floor(x / 32) + origin.x, Math.floor(y / 32) + origin.y]
 
 
@@ -158,7 +156,6 @@ class Desk extends Object
     $('#canvas').append(@jq)
 
   updateScreenPos: ->
-    console.log 'screen x,y', this.screenX(), this.screenY()
     @jq.css('left', "#{this.screenX()}px")
     @jq.css('top', "#{this.screenY()}px")
 
@@ -166,7 +163,8 @@ class Desk extends Object
     putTileNode(@x, @y, this)
 
 
-expandMap = ->
+expandMapTop = ->
+  mapDimension.topLeft.y -= 10
 
 
 $ ->
