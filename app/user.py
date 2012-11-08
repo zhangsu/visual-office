@@ -15,7 +15,7 @@ class Yelper(db.Model):
     def to_dic(self):
         return {'x': self.x,
                 'y': self.y,
-                'id': self.guser.nickname(),
+                'id': self.guser.nickname().split('@')[0],
                 'map_id': self.map_id}
 
     def to_json(self):

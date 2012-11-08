@@ -95,9 +95,6 @@ class DeskPage(webapp2.RequestHandler):
         if not desk_id:
             x = int(self.request.get('x'))
             y = int(self.request.get('y'))
-            if not x or not y:
-                self.msg.error("Please specify desk_id or x and y")
-                return None
 
         if desk_id:
             key = db.Key.from_path('Desk', map_id, 'Desk', int(desk_id))

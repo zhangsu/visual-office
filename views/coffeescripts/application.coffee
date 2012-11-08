@@ -9,28 +9,66 @@ ToolbarState =
 
 toolbarState = ToolbarState.nothing
 
-mapId = 1
+mapId = 'Playground'
 mapDimension =
   topLeft:
-    x: -10
-    y: -10
+    x: 0
+    y: 0
   bottomRight:
-    x: 20
-    y: 10
+    x: 200
+    y: 100
 
 myself = null
+myName = ''
 
 tiles = {}
 
+$.ajaxSetup
+  dataType: 'json'
+
+imperativeRequestResponseHandler = (response) ->
+  alert response.content if response.status == 'ERROR'
 
 freeTileNode = (x, y) ->
   xkey = "#{x}"
-  tiles[xkey]["#{y}"] = null if tiles[xkey]
+  ykey = "#{y}"
+  node = tiles[xkey][ykey]
+  tiles[xkey][ykey] = null if tiles[xkey]
 
-putTileNode = (x, y, node) ->
+  if node instanceof Character
+    $.post '/user',
+      x: x,
+      y: y,
+      map_id: mapId,
+      action: 'remove'
+    , imperativeRequestResponseHandler
+  else
+    $.post '/desk',
+      x: x,
+      y: y,
+      map_id: mapId,
+      action: 'remove'
+    , imperativeRequestResponseHandler
+
+
+putTileNode = (x, y, node, persist = false) ->
   xkey = "#{x}"
   tiles[xkey] ||= {}
   tiles[xkey]["#{y}"] = node
+  return unless persist
+
+  if node instanceof Character
+    $.post '/user',
+      x: x,
+      y: y,
+      map_id: mapId
+    , imperativeRequestResponseHandler
+  else
+    $.post '/desk',
+      x: x,
+      y: y,
+      map_id: mapId
+    , imperativeRequestResponseHandler
 
 getTileNode = (x, y) ->
   xkey = "#{x}"
@@ -42,9 +80,22 @@ tileUnderPoint = (x, y) ->
   origin = mapDimension.topLeft
   [Math.floor(x / 32) + origin.x, Math.floor(y / 32) + origin.y]
 
+populateObjects = ->
+  $.get '/desks', map_id: mapId, (response) ->
+    imperativeRequestResponseHandler(response)
+
+    for desk in response.content
+      new Desk(desk.x, desk.y)
+
+  $.get '/users', map_id: mapId, (response) ->
+    imperativeRequestResponseHandler(response)
+
+    for user in response.content
+      new Character(user.id, user.x, user.y) unless getTileNode(user.x, user.y)
+
 
 class Object
-  constructor: (@id, @x, @y, @height) ->
+  constructor: (@x, @y, @height) ->
 
   screenX: ->
     (@x - mapDimension.topLeft.x) * 32
@@ -63,64 +114,31 @@ class Object
 
 
 class Character extends Object
-  constructor: (id, @name, x, y, @width = 32, height = 48) ->
-    super(id, x, y, height)
+  constructor: (@name, x, y, persist = false, @width = 32, height = 48) ->
+    super(x, y, height)
 
     @orien = 0
 
-    @jq = $("<div id='char#{@id}' class='character fade-in'>")
+    @jq = $("<div class='character fade-in'>")
     @jq.css('z-index', y + 1000000)
     @jq_sprite = $("<div class='sprite'>")
     @jq_sprite.width(@width)
     @jq_sprite.height(height)
-    @jq.append("<div unselectable='on' class='name'>#{@name}</div>")
+    @jq.append("<div class='name'>#{@name}</div>")
     @jq.append(@jq_sprite)
 
     @jq_sprite.addClass('male')
 
     this.updateScreenX()
     this.updateScreenY()
-    putTileNode(@x, @y, this)
+    putTileNode(@x, @y, this, persist)
 
     $('#canvas').append(@jq)
 
     # Need the computed width after rendering.
-    jq_name = $("#char#{id} .name")
+    jq_name = $(".character:last-child > .name")
     jq_name.css('left', "#{(@width - jq_name.width()) / 2}px")
     jq_name.css('top', '-16px')
-
-  moveLeft: ->
-    this.freeTileNode()
-    @x -= 1
-    @orien = 1
-    this.updateScreenX()
-    this.updateMovement()
-
-  moveRight: ->
-    this.freeTileNode()
-    @x += 1
-    @orien = 2
-    this.updateScreenX()
-    this.updateMovement()
-
-  moveUp: ->
-    this.freeTileNode()
-    @y -= 1
-    @orien = 3
-    this.updateScreenY()
-    this.updateMovement()
-
-  moveDown: ->
-    this.freeTileNode()
-    @y += 1
-    @orien = 0
-    this.updateScreenY()
-    this.updateMovement()
-
-  turn: ->
-    @orien += 1
-    @orien %= 4
-    this.updateOrientation()
 
   enableTurning: ->
     @jq_sprite.click =>
@@ -136,31 +154,24 @@ class Character extends Object
     @jq_sprite.removeClass('orien0 orien1 orien2 orien3')
     @jq_sprite.addClass("orien#{@orien}")
 
-  updateMovement: ->
-    putTileNode(@x, @y, this)
-    this.updateOrientation()
-
 
 class Desk extends Object
-  constructor: (id, x, y, height = 48) ->
-    super(id, x, y, height)
+  constructor: (x, y, persist = false, height = 48) ->
+    super(x, y, height)
 
-    @jq = $("<div id='desk#{@id}' class='desk fade-in'>")
+    @jq = $("<div class='desk fade-in'>")
     @jq.width(32)
     @jq.height(height)
     @jq.css('z-index', y + 1000000)
 
     this.updateScreenPos()
-    this.updateNode()
+    putTileNode(@x, @y, this, persist)
 
     $('#canvas').append(@jq)
 
   updateScreenPos: ->
     @jq.css('left', "#{this.screenX()}px")
     @jq.css('top', "#{this.screenY()}px")
-
-  updateNode: ->
-    putTileNode(@x, @y, this)
 
 
 expandMapTop = ->
@@ -207,7 +218,7 @@ $ ->
       when ToolbarState.addingSelf
         unless node
           myself.remove() if myself
-          myself = new Character(1, 'szhang', x, y)
+          myself = new Character(myName, x, y, true)
           myself.enableTurning()
       when ToolbarState.removingSelf
         if node and node is myself
@@ -215,7 +226,7 @@ $ ->
           toolbarState = ToolbarState.nothing
           $('#remove-self').removeClass('pressed')
       when ToolbarState.addingDesk
-        new Desk(1, x, y) unless node
+        new Desk(x, y, true) unless node
       when ToolbarState.removingDesk
         node.remove() if node instanceof Desk
       else
@@ -227,4 +238,15 @@ $ ->
   .mousemove (e) ->
     return unless mousedownOnCanvas
     mouseClickHandler(e)
+
+  $.get '/me', (response) ->
+    imperativeRequestResponseHandler(response)
+    character = response.content
+    if character.x
+      myself = new Character(character.id, character.x, character.y)
+    else
+      myself = null
+    myName = character.id
+
+  populateObjects()
 
